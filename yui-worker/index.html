@@ -1,0 +1,61 @@
+<!doctype>
+<html>
+<head>
+    <title>YUI with Web Workers</title>
+</head>
+<body>
+<p>YUI Web Workers</p>
+<p id="yui-worker">refill</p>
+
+<div id="scripts">
+    <script src="http://yui.yahooapis.com/3.6.0/build/yui/yui-min.js"></script>
+    <script>
+
+    if (!window.BlobBuilder && window.WebKitBlobBuilder) { 
+        window.BlobBuilder = window.WebKitBlobBuilder; 
+    }
+
+    YUI().use("node", function (Y) {
+        var worker = new Worker("js/yui-worker/yui-worker.js");
+
+        worker.onmessage = function (e) {
+            console.log(e);
+            if (e.data.type === "script") {
+
+                var builder = new BlobBuilder(),
+                    ourUrl = window.webkitURL || window.URL,
+                    script;
+
+                builder.append(e.data.payload);
+
+                script = document.createElement('script');
+                script.setAttribute("type", "text/javascript");
+                script.src = ourUrl.createObjectURL(builder.getBlob());
+                Y.one("#scripts").append(script);
+                
+            } else {
+                Y.one("#yui-worker").setContent(e.data);
+            }
+        }
+
+        worker.onerror = function (e) {
+            console.log("Got error from Worker");
+            console.log(e);
+        }
+
+        worker.postMessage({
+            type: "url-request",
+            config: {
+                method: "GET",
+                url: "../test.js",
+                cors: false,
+                headers: true,
+                type: "script"
+            },
+            payload: "fname=Scott"
+        });
+    });
+    </script>
+</div>
+</body>
+</html>

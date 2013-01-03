@@ -1,0 +1,47 @@
+<!doctype>
+<html>
+<head>
+    <title>Web Worker Queue</title>
+    <style>
+    body {
+        font-family: 'Helvetica', sans-serif;
+        font-size: 1em;
+        color: #333;
+    }
+    </style>
+    <script src="lib/BlobBuilder.js"></script>
+</head>
+<body>
+<p>Blob (formally BlobBuilder)</p>
+<div id="yui-worker" class="yui-worker">
+    <ul>
+    </ul>
+</div>
+<div id="yui-worker-messages" class="yui-worker">
+    <ul>
+    </ul>
+</div>
+<script type="text/x-javascript" id="deferred_evaluation">
+(function (){alert("evaluate later");}());
+</script>
+<div id="scripts">
+    <script src="http://yui.yahooapis.com/3.6.0/build/yui/yui-min.js"></script>
+    <script>
+    YUI().use("node", function (Y) {
+        var builder = new BlobBuilder(),
+            ourUrl = window.webkitURL || window.URL,
+            script,
+            js = "(function () { alert('hello'); }());",
+            js2 = Y.Node.all("#deferred_evaluation")._nodes[0].innerText;
+            
+            builder.append(js2);
+            
+            script = document.createElement('script');
+            script.setAttribute("type", "text/javascript");
+            script.src = ourUrl.createObjectURL(builder.getBlob());
+            Y.one("#scripts").append(script);
+    });
+    </script>
+</div>
+</body>
+</html>
